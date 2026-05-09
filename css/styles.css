@@ -1,0 +1,424 @@
+/* YodaRP System styles extracted from the stable single-file build. */
+html, body {
+    margin: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: #ced7df;
+    font-family: Arial, Helvetica, sans-serif;
+  }
+  #map {
+    width: 100vw;
+    height: 100vh;
+    display: block;
+    cursor: grab;
+    background: #ced7df;
+  }
+  #map.dragging { cursor: grabbing; }
+  #loading {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: grid;
+    place-items: center;
+    background: linear-gradient(140deg, #18212e, #2a3a4b);
+    color: #eef5fa;
+  }
+  #loadingBox {
+    width: min(560px, calc(100vw - 32px));
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.16);
+    border-radius: 18px;
+    padding: 20px;
+    box-shadow: 0 18px 50px rgba(0,0,0,0.35);
+  }
+  #loadingBox h1 { margin: 0 0 10px; font-size: 23px; }
+  #loadingBox p { margin: 8px 0; line-height: 1.4; color: #d3dee7; }
+  #barOuter {
+    height: 14px;
+    margin-top: 14px;
+    background: rgba(255,255,255,0.12);
+    border-radius: 999px;
+    overflow: hidden;
+  }
+  #barInner {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #79c5ff, #e4f4ff);
+    border-radius: 999px;
+    transition: width 0.08s linear;
+  }
+  #ui {
+    position: fixed;
+    left: 12px;
+    top: 12px;
+    z-index: 12;
+    width: 380px;
+    max-width: calc(100vw - 24px);
+    max-height: calc(100vh - 24px);
+    overflow: hidden;
+    background: rgba(18,26,34,0.88);
+    color: #eef4f8;
+    border: 1px solid rgba(255,255,255,0.14);
+    border-radius: 14px;
+    box-shadow: 0 10px 26px rgba(0,0,0,0.24);
+    backdrop-filter: blur(8px);
+  }
+  #ui .inner {
+    padding: 14px;
+    max-height: calc(100vh - 24px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+  }
+  #ui .inner::-webkit-scrollbar { width: 9px; }
+  #ui .inner::-webkit-scrollbar-track { background: rgba(255,255,255,0.05); border-radius: 999px; }
+  #ui .inner::-webkit-scrollbar-thumb { background: rgba(210,225,235,0.28); border-radius: 999px; }
+  #ui .inner::-webkit-scrollbar-thumb:hover { background: rgba(210,225,235,0.42); }
+  #ui h1 { margin: 0 0 7px; font-size: 17px; }
+  #ui h2 {
+    margin: 10px 0 5px;
+    font-size: 13px;
+    color: #ffffff;
+  }
+  #ui p, #ui li, #ui div { font-size: 12.5px; line-height: 1.35; }
+  #ui p { margin: 6px 0; color: #dbe5ec; }
+  #readout { font-weight: 700; color: #ffffff; }
+  .hint { color: #b7c6d1 !important; }
+  .row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: center;
+    margin-top: 8px;
+  }
+  button {
+    background: #2c3d4f;
+    color: #eef4f8;
+    border: 1px solid rgba(255,255,255,0.16);
+    padding: 8px 10px;
+    border-radius: 9px;
+    cursor: pointer;
+    font-size: 12px;
+  }
+  button:hover { background: #375066; }
+  button:disabled { opacity: 0.5; cursor: default; }
+  .armyEditor {
+    margin-top: 8px;
+    padding: 8px;
+    background: rgba(255,255,255,0.055);
+    border: 1px solid rgba(255,255,255,0.10);
+    border-radius: 10px;
+  }
+  .armyGrid {
+    display: grid;
+    grid-template-columns: minmax(105px, 1fr) minmax(0, 155px);
+    gap: 6px 8px;
+    align-items: center;
+    margin-top: 7px;
+  }
+  .armyGrid label { color: #dbe5ec; font-size: 12px; }
+  .armyGrid input, .armyEditor select {
+    width: 100%;
+    box-sizing: border-box;
+    background: #101923;
+    color: #eef4f8;
+    border: 1px solid rgba(255,255,255,0.16);
+    border-radius: 7px;
+    padding: 6px 7px;
+    font-size: 12px;
+  }
+  .armyScoreLine {
+    margin-top: 7px;
+    color: #ffffff;
+    font-weight: 700;
+  }
+  .armyContents {
+    margin-top: 6px;
+    color: #cbd8e2;
+    font-size: 12px;
+  }
+  .toggleBtn.active { background: #4a6b87; border-color: rgba(255,255,255,0.28); box-shadow: inset 0 0 0 1px rgba(255,255,255,0.06); }
+  .menuTabs {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+    margin-top: 10px;
+  }
+  .menuTabs button {
+    padding: 8px 6px;
+    background: #243444;
+  }
+  .menuTabs button.active {
+    background: #4a6b87;
+    border-color: rgba(255,255,255,0.28);
+  }
+  .menuPanel { display: none; }
+  .menuPanel.active { display: block; }
+  #ui input[type="text"], #ui input[type="number"], #ui select {
+    background: #101923;
+    color: #eef4f8;
+    border: 1px solid rgba(255,255,255,0.16);
+    border-radius: 8px;
+    padding: 7px 8px;
+    font-size: 12px;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+  #ui select { min-width: 0; width: 100%; }
+  #selectedEmpirePanel input[type="number"], #selectedEmpirePanel input[type="text"] {
+    width: 100%;
+    box-sizing: border-box;
+  }
+  .empireMiniGrid {
+    display: grid;
+    grid-template-columns: minmax(104px, 1fr) minmax(0, 175px);
+    gap: 6px 8px;
+    align-items: center;
+    margin-top: 7px;
+  }
+  .empireMiniGrid span {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 58px;
+    gap: 5px;
+  }
+  .empireMiniGrid span select,
+  .empireMiniGrid span input {
+    min-width: 0;
+    width: 100%;
+  }
+  .empireSectionTitle {
+    margin-top: 10px;
+    font-weight: 700;
+    color: #ffffff;
+  }
+  .subtleLine {
+    color: #b9c8d2;
+    font-size: 12px;
+    margin-top: 4px;
+  }
+  .clickableListItem {
+    cursor: pointer;
+  }
+  .clickableListItem:hover {
+    color: #ffffff;
+  }
+  .empireSettlementPick {
+    background: transparent;
+    border: 0;
+    padding: 0;
+    display: inline;
+    color: #eef4f8;
+    text-align: left;
+    font-weight: 700;
+  }
+  .empireSettlementPick:hover { text-decoration: underline; background: transparent; }
+  .smallPanel {
+    margin-top: 8px;
+    padding: 9px 10px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.10);
+    border-radius: 10px;
+  }
+  #settlementList, #armyList, #empireList, #diplomacyList {
+    margin: 6px 0 0;
+    padding-left: 18px;
+    max-height: 100px;
+    overflow: auto;
+  }
+
+  .battlePanel {
+    position: fixed;
+    left: 50%;
+    bottom: 12px;
+    transform: translateX(-50%);
+    width: min(850px, calc(100vw - 24px));
+    max-height: 42vh;
+    overflow: auto;
+    z-index: 35;
+    background: rgba(19, 27, 36, 0.96);
+    color: #eef4f8;
+    border: 1px solid rgba(255,255,255,0.18);
+    border-radius: 14px;
+    box-shadow: 0 14px 42px rgba(0,0,0,0.38);
+    padding: 12px;
+    backdrop-filter: blur(8px);
+  }
+  .battlePanel.hidden { display: none; }
+  .battleHeader {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    align-items: start;
+    margin-bottom: 8px;
+  }
+  .battleGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .battleSide {
+    background: rgba(255,255,255,0.055);
+    border: 1px solid rgba(255,255,255,0.10);
+    border-radius: 10px;
+    padding: 9px;
+  }
+  .dominanceBar {
+    height: 15px;
+    border-radius: 999px;
+    overflow: hidden;
+    background: rgba(230,238,245,0.20);
+    border: 1px solid rgba(255,255,255,0.12);
+    margin: 8px 0;
+  }
+  .dominanceA {
+    height: 100%;
+    background: linear-gradient(90deg, #3f6ee8, #7fa5ff);
+  }
+  .pingButton {
+    pointer-events: none;
+  }
+  .battlePanel button {
+    margin: 3px;
+  }
+  .advantageList {
+    margin: 5px 0 0;
+    padding-left: 18px;
+    color: #d2e1ea;
+    font-size: 12px;
+  }
+
+  #contextMenu {
+    position: fixed;
+    display: none;
+    z-index: 100;
+    min-width: 230px;
+    background: rgba(20,28,36,0.97);
+    color: #edf4f8;
+    border: 1px solid rgba(255,255,255,0.16);
+    border-radius: 12px;
+    box-shadow: 0 14px 36px rgba(0,0,0,0.36);
+    overflow: hidden;
+  }
+  #contextMenu .title {
+    padding: 9px 11px;
+    color: #bed0dc;
+    font-size: 12px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+  #contextMenu button {
+    display: block;
+    width: 100%;
+    border: 0;
+    border-radius: 0;
+    text-align: left;
+    background: transparent;
+    padding: 10px 12px;
+  }
+  #contextMenu button:hover { background: rgba(255,255,255,0.08); }
+  #contextMenu .zoomRow {
+    padding: 10px 11px 12px;
+    border-top: 1px solid rgba(255,255,255,0.08);
+  }
+  #contextMenu input {
+    width: 88px;
+    border-radius: 8px;
+    border: 1px solid rgba(255,255,255,0.16);
+    background: #101923;
+    color: #eef4f8;
+    padding: 7px 8px;
+    margin-right: 7px;
+  }
+  .popup {
+    position: fixed;
+    z-index: 40;
+    width: 540px;
+    max-width: calc(100vw - 24px);
+    background: rgba(20,28,37,0.97);
+    color: #eef4f8;
+    border: 1px solid rgba(255,255,255,0.18);
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 18px 44px rgba(0,0,0,0.36);
+  }
+  .popupHeader {
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 0 10px 0 12px;
+    background: rgba(255,255,255,0.08);
+    user-select: none;
+    cursor: move;
+  }
+  .popupTitle {
+    font-size: 13px;
+    font-weight: 700;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+  .closeBtn {
+    width: 28px !important;
+    height: 28px !important;
+    padding: 0 !important;
+    border-radius: 8px !important;
+    display: grid !important;
+    place-items: center;
+    background: rgba(255,255,255,0.08) !important;
+    text-align: center !important;
+    line-height: 1 !important;
+  }
+  .popupBody { padding: 10px; }
+  .localCanvas {
+    width: 100%;
+    aspect-ratio: 1/1;
+    display: block;
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,0.13);
+    background: #bcc8d1;
+  }
+  .popupFooter {
+    margin-top: 8px;
+    font-size: 12px;
+    color: #d1dde6;
+    min-height: 18px;
+  }
+  .legend {
+    position: fixed;
+    right: 12px;
+    bottom: 12px;
+    z-index: 11;
+    width: 220px;
+    max-width: calc(100vw - 24px);
+    background: rgba(18,26,34,0.88);
+    color: #eef4f8;
+    border: 1px solid rgba(255,255,255,0.14);
+    border-radius: 12px;
+    padding: 10px 12px;
+    box-shadow: 0 10px 26px rgba(0,0,0,0.22);
+  }
+  .legend h2 { margin: 0 0 8px; font-size: 14px; }
+  .elevBar {
+    height: 16px;
+    border-radius: 999px;
+    border: 1px solid rgba(255,255,255,0.14);
+    background: linear-gradient(to right,
+      #7dbd7a 0%,
+      #a2c76d 12%,
+      #c3c56d 25%,
+      #d0b075 39%,
+      #b98766 52%,
+      #9a7358 63%,
+      #8c7f76 76%,
+      #c7cbcc 89%,
+      #f6f6f6 100%);
+  }
+  .ticks {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 5px;
+    font-size: 11px;
+    color: #c6d3dd;
+  }

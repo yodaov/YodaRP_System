@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>YodaRP System</title>
+<link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+<canvas id="map"></canvas>
+
+<div id="loading">
+  <div id="loadingBox">
+    <h1>Building the terrain…</h1>
+    <p>This version loads a preprocessed NASADEM elevation grid for Greece. Zoom popups render directly from the DEM for sharper local relief.</p>
+    <p id="loadingStep">Preparing…</p>
+    <div id="barOuter"><div id="barInner"></div></div>
+  </div>
+</div>
+
+<div id="ui">
+  <div class="inner">
+    <h1>YodaRP System</h1>
+    <p>NASA DEM-based terrain for war roleplays. Map mode stays here; campaign controls are separated below.</p>
+    <div class="row">
+      <button id="resetBtn">Reset view</button>
+      <button id="clearAllBtn">Clear all</button>
+      <button id="passTimeBtn">Pass time</button>
+    </div>
+    <div class="row">
+      <button id="modeHeightBtn" class="toggleBtn active">Heightmap mode</button>
+      <button id="modeBiomeBtn" class="toggleBtn">Satellite / biome mode</button>
+      <button id="modeWindBtn" class="toggleBtn">Wind / sea mode</button>
+      <button id="refreshWindBtn">Refresh wind</button>
+    </div>
+    <div class="row">
+      <button id="exportBtn">Export changes</button>
+      <button id="importBtn">Import changes</button>
+      <input id="importFileInput" type="file" accept="application/json,.json" style="display:none">
+    </div>
+    <p id="readout">Loading…</p>
+    <p class="hint">Left click a settlement/army to select it. Drag to pan. Mouse wheel to zoom. Right click land to open the action menu.</p>
+
+    <div class="menuTabs">
+      <button id="menuArmiesBtn" class="active">Armies</button>
+      <button id="menuEmpiresBtn">Empires</button>
+      <button id="menuDiplomacyBtn">Diplomacy</button>
+      <button id="menuGuideBtn">Guide</button>
+    </div>
+
+    <div id="panelArmies" class="menuPanel active">
+      <div class="smallPanel">
+        <h2>Selected settlement</h2>
+        <div id="selectedSettlementInfo">None selected.</div>
+        <div class="row">
+          <button id="addArmyBtn" disabled>Add army to selected settlement</button>
+        </div>
+      </div>
+
+      <div class="smallPanel">
+        <h2>Selected army</h2>
+        <div id="selectedArmyInfo">No army selected.</div>
+        <div class="row">
+          <button id="setDestinationBtn" disabled>Choose travel destination</button>
+        </div>
+      </div>
+
+      <div class="smallPanel">
+        <h2>Current armies</h2>
+        <ul id="armyList"></ul>
+      </div>
+    </div>
+
+    <div id="panelEmpires" class="menuPanel">
+      <div class="smallPanel">
+        <h2>Create empire</h2>
+        <div class="row">
+          <input id="empireNameInput" type="text" placeholder="Empire name">
+          <button id="createEmpireBtn">Create Empire</button>
+        </div>
+      </div>
+
+      <div class="smallPanel">
+        <h2>Empires</h2>
+        <ul id="empireList"></ul>
+      </div>
+
+      <div class="smallPanel">
+        <h2>Link settlement to empire</h2>
+        <div class="row">
+          <select id="empireSettlementSelect"></select>
+          <button id="assignSettlementBtn">Link to selected empire</button>
+        </div>
+      </div>
+
+      <div class="smallPanel">
+        <h2>Settlements</h2>
+        <ul id="settlementList"></ul>
+      </div>
+
+      <div class="smallPanel">
+        <h2>Selected empire</h2>
+        <div id="selectedEmpirePanel">No empire selected.</div>
+      </div>
+    </div>
+
+    <div id="panelDiplomacy" class="menuPanel">
+      <div class="smallPanel">
+        <h2>Diplomacy</h2>
+        <p class="hint">Set how two empires relate to each other. Next patch can use this to decide whether armies fight.</p>
+        <div class="row">
+          <select id="empireSelectA"></select>
+          <select id="empireSelectB"></select>
+        </div>
+        <div class="row">
+          <select id="diplomacyStatusSelect">
+            <option value="neutral">Neutral</option>
+            <option value="enemies">Enemies</option>
+            <option value="allies">Allies</option>
+          </select>
+          <button id="setDiplomacyBtn">Set relation</button>
+        </div>
+        <ul id="diplomacyList"></ul>
+      </div>
+    </div>
+    <div id="panelGuide" class="menuPanel">
+      <div class="smallPanel">
+        <h2>Guide</h2>
+        <p class="hint">This is the in-app book for the current systems.</p>
+
+        <div class="empireSectionTitle">Map controls</div>
+        <p>Drag to pan, mouse wheel to zoom, and right click land to add villages/capitals or generate a frozen zoom popup. Heightmap mode shows elevation. Satellite/biome mode shows the generated biome layer.</p>
+
+        <div class="empireSectionTitle">Settlements</div>
+        <p>Create villages/capitals by right clicking the map. Link them to an empire from the Empires menu. Each settlement has its own supplies, infrastructure, population, buildings, fortifications and local army management.</p>
+
+        <div class="empireSectionTitle">Empires</div>
+        <p>Empires store wealth, total population and their linked settlements. Wealth changes every pass time from taxes, building income, soldier wages, building upkeep, and the manual wealth change modifier.</p>
+
+        <div class="empireSectionTitle">Supplies</div>
+        <p>Food and materials are settlement-level. Crops increase food; mines increase materials. Biome affects production. Population and raised armies consume food. Buildings and fortifications can consume materials or wealth.</p>
+
+        <div class="empireSectionTitle">Infrastructure</div>
+        <p>Infrastructure is settlement-level and admin-set. It does not change automatically. Each infrastructure point multiplies population growth by 1.2×.</p>
+
+        <div class="empireSectionTitle">Population</div>
+        <p>Population is settlement-level, but total population is shown at empire level. Growth depends on base growth, infrastructure, custom building modifiers and food availability. Food shortage slows growth or causes decline.</p>
+
+        <div class="empireSectionTitle">Buildings</div>
+        <p>Default buildings are crops, mines, markets and barracks. Crops improve food, mines improve materials, markets improve wealth gain, and barracks reduce soldier wages. Custom buildings can be created with up to three positive or negative modifiers.</p>
+
+        <div class="empireSectionTitle">Fortifications</div>
+        <p>Fortifications are settlement-level and have levels 1 to 5. Higher levels cost much more and require more material upkeep per pass time.</p>
+
+        <div class="empireSectionTitle">Armies</div>
+        <p>Armies contain many unit types. Each unit has a score value, hiring price, wage, food use and movement speed. Better units usually cost more, receive higher score, consume more food and demand higher wages. Their score changes according to strategy, terrain and biome. Armies can be disbanded; their wage is still paid once on the next pass time.</p>
+        <p>Army movement speed is calculated from the average speed of all troops in the army, then reduced by slope, altitude and water crossing. Sea/water movement is slower.</p>
+        <p>Terrain and biome are now intentionally decisive. Cavalry is heavily favored on open plains and lowlands, but severely punished in forests, marshes, cliffs and steep mountain terrain. Light footmen, skirmishers and berserker-style troops do better in forests, scrub and broken terrain. Archers like clear lines of sight, hills and open ground, but common archers suffer in dense forest. Pikemen and hoplites prefer open or defensive formation ground and dislike rough, wet, or steep terrain.</p>
+        <p>Friendly ground matters. Armies within 5 km of their own village receive a small defensive boost, near their capital a stronger boost, and near their fortress the strongest defensive boost.</p>
+        <p>Battles no longer simply wait for the timer to expire. They continue until a side reaches its break point, usually when only about 10–25% of the original force remains active after deaths and injuries. Fiercer elite troops such as berserkers, Huscarls and Varangian Guards are less likely to flee early.</p>
+        <ul>
+          <li><strong>Cavalry</strong> — score 2.0, price 14, wage 0.08, food 0.065, speed 38 km/day. Counters archers, light troops and Kush Archers; weak to pikemen and hoplites.</li>
+          <li><strong>Light Footmen</strong> — score 0.75, price 4, wage 0.02, food 0.028, speed 26 km/day. Cheap rough-terrain troops.</li>
+          <li><strong>Archers</strong> — score 1.0, price 7, wage 0.03, food 0.032, speed 24 km/day. Counter pikemen, light footmen and berserkers; weak to cavalry and shielded elite infantry.</li>
+          <li><strong>Pikemen</strong> — score 1.0, price 8, wage 0.03, food 0.038, speed 20 km/day. Counter cavalry, Numidian Cavalry and hoplites; weak in rough terrain and against flexible infantry.</li>
+          <li><strong>Heavy Infantry</strong> — score 1.0, price 9, wage 0.05, food 0.046, speed 21 km/day. Counters pikemen and light troops.</li>
+          <li><strong>Hoplites</strong> — score 1.25, price 12, wage 0.055, food 0.050, speed 20 km/day. Classical spear infantry; counters cavalry, Numidian Cavalry and light footmen.</li>
+          <li><strong>Hybrid Infantry</strong> — score 1.15, price 11, wage 0.050, food 0.044, speed 24 km/day. Flexible infantry; counters light footmen, archers and Numidian Cavalry.</li>
+          <li><strong>Varangian Guards</strong> — legendary score 2.25, price 30, wage 0.140, food 0.075, speed 19 km/day. Counters heavy infantry, hoplites, huscarls and berserkers.</li>
+          <li><strong>Hypaspists</strong> — score 1.65, price 18, wage 0.085, food 0.055, speed 24 km/day. Elite flexible guards; counter pikemen, archers and light footmen.</li>
+          <li><strong>Numidian Cavalry</strong> — score 1.45, price 17, wage 0.080, food 0.060, speed 45 km/day. Very fast skirmish cavalry; counters missile units and pikemen through harassment.</li>
+          <li><strong>Kush Archers</strong> — legendary score 2.35, price 32, wage 0.130, food 0.062, speed 23 km/day. Counter pikemen, heavy infantry, hoplites, Hypaspists and Varangian Guards at range.</li>
+          <li><strong>Viking Berserkers</strong> — score 1.75, price 19, wage 0.090, food 0.070, speed 25 km/day. Shock troops; counter archers, light footmen and hybrid infantry.</li>
+          <li><strong>Huscarls</strong> — score 1.95, price 24, wage 0.110, food 0.068, speed 20 km/day. Elite shield infantry; counter archers, light footmen and berserkers.</li>
+</ul>
+
+
+        <div class="empireSectionTitle">Harbors, ships and wind</div>
+        <p>Harbors are a default settlement type and must be placed on land within 3 km of the sea. A linked harbor opens a ship-building menu where you can buy groups of Fishing Boats, Raider Ships, Longboats, Sailboats, Biremes, Merchant Ships, Triremes, Quadriremes, Quinqueremes, or Custom ships.</p>
+        <p>Ship groups move like armies, can trigger encounters and battles, can fuse with allied ship groups, and can carry land troops. Ground armies cannot cross water by themselves; if ordered across water, they stop at the shore. Ships can only move on water.</p>
+        <p>To transport troops, move a ship group within 5 km of a ground army and use Load army into ships. When the fleet reaches another shore, use Release troops to shore. Ship capacity is multiplied by the number of ships in the group.</p>
+        <p>Wind / sea mode shows generated wind arrows over the sea. Ships move faster with the wind and slower against it. Sail-heavy vessels such as Fishing Boats and Sailboats are more affected by wind than oared ships like Biremes and Triremes. Refresh wind generates a new sea wind map.</p>
+
+        <div class="empireSectionTitle">Diplomacy</div>
+        <p>Diplomacy sets relations between two empires as Neutral, Enemies or Allies. This is stored now and can later decide whether armies fight automatically.</p>
+
+        <div class="empireSectionTitle">Pass time</div>
+        <p>Pass time advances settlement supplies, population, buildings, fortification upkeep, army wages and empire wealth. Buildings under construction reduce their remaining build time by one each pass.</p>
+
+        <div class="empireSectionTitle">Export / Import</div>
+        <p>Export saves the current campaign state as a JSON file. Import restores saved settlements, empires, armies, diplomacy, routes, economy, buildings and other campaign state.</p>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div id="battlePanel" class="battlePanel hidden"></div>
+
+<div id="contextMenu">
+  <div class="title" id="menuTitle">Selected point</div>
+  <button id="addVillageBtn">Add village here</button>
+  <button id="addCapitalBtn">Add capital here</button>
+  <button id="addFortressBtn">Add fortress here</button>
+  <button id="addHarborBtn">Add harbor here</button>
+  <div class="zoomRow">
+    <div style="margin-bottom:6px; color:#cedae3; font-size:12px;">Generate frozen zoom-in popup</div>
+    <input id="radiusInput" type="number" min="1" max="300" value="20" step="1"> km radius
+    <button id="zoomBtn" style="margin-top:8px; border-radius:8px; background:#2c4155; display:inline-block; width:auto;">Generate</button>
+  </div>
+</div>
+
+<div class="legend">
+  <h2>Elevation legend</h2>
+  <div class="elevBar"></div>
+  <div class="ticks"><span>0m</span><span>500</span><span>1000</span><span>1800</span><span>2800m</span></div>
+</div>
+
+<script src="js/00_data_config_state.js"></script>
+<script src="js/01_terrain_generation.js"></script>
+<script src="js/02_empire_economy_ui.js"></script>
+<script src="js/03_map_rendering.js"></script>
+<script src="js/04_battle_system.js"></script>
+<script src="js/05_interactions_popups_routes.js"></script>
+<script src="js/07_naval_harbor_wind.js"></script>
+<script src="js/06_init_events.js"></script>
+</body>
+</html>
